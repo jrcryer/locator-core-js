@@ -1,32 +1,57 @@
-var shared;
+var shared, sinon, cookieString;
 
 module("Shared", {
   setup: function() {
-    shared = new locator.core.Shared();
+    cookieString = "locserv=1#l1#i=2653822:n=Cardiff:h=w@w1#i=4:p=Cardiff@d1#1=wa:2=w:3=w:4=44.9@n1#r=53;";
+    locator.core.Shared.prototype.setCookieString = function(value) {
+      document.cookie = cookieString;
+    };
+    var api = new locator.core.API({ palDomain: "http://localhost:9999/test/fixtures" });
+    shared = new locator.core.Shared(api);
   }, teardown: function() {
-    shared.unset();
+    document.cookie = "";
   }
 });
 
-test("should return the location cookie if set", function() {
-  shared.set("Cardiff");
-  equal(shared.get(), "Cardiff", "Cookie has not been set");
+test("should return null if cookie not set", function() {
+  equal(shared.get(), null, "Cookie was not previously set");
 });
 
-test("should return undefined if cookie not set", function() {
-  shared.unset();
-  equal(shared.get(), undefined, "Cookie was not previously set");
+test("should return the location object if set", function() {
+  expect(3);
+  sinon.stub(shared, "getCookieString").returns(cookieString);
+  var location = shared.get();
+
+  equal("2653822", location.id);
+  equal("Cardiff", location.name);
+  equal("wales", location.nation);
 });
 
-test("should correctly set cookie", function() {
-  shared.set(1234);
-  equal(shared.get(), "1234", "Cookie value not retrieved successfully");
+test("should return the news object if set", function() {
+  expect(2);
+  sinon.stub(shared, "getCookieString").returns(cookieString);
+  var location = shared.get();
+
+  equal("53", location.news.id);
+  equal("wales/south_east_wales", location.news.path);
 });
 
-test("should unset a cookie", function() {
-  shared.set(5678);
-  equal(shared.get(), "5678", "Cookie value not retrieved successfully");
+test("should return the weather object if set", function() {
+  expect(2);
+  sinon.stub(shared, "getCookieString").returns(cookieString);
+  var location = shared.get();
 
-  shared.unset();
-  equal(shared.get(), undefined, "Cookie was not previously set");
+  equal("4", location.weather.id);
+  equal("Cardiff", location.weather.name);
+});
+
+asyncTest("should correctly set cookie", function() {
+  expect(2);
+  shared.set("2653822", {
+    success: function(location) {
+      equal("2653822", location.id, "Cookie value not retrieved successfully");
+      equal("Cardiff", location.name, "Cookie value not retrieved successfully");
+      start();
+    }
+  });
 });

@@ -43,6 +43,9 @@ var api = new locator.core.API({ env: "stage" });
 
 If you want to pass all requests to a separate domain, then you can optionally pass a `{ domain: "https://api.test.bbc.co.uk/locator" }` option to the constructor.
 
+The API module also has a `getCookie` method which alternatively uses a PAL based endpoint. To update this to use a different domain, use the `{ palDomain: "http://beta.bbc.co.uk" }` option on the API constructor.
+
+
 ### Options / parameters
 
 All 4 endpoint requests, `getLocation`, `search`, `autoComplete` and `reverseGeocode` should at the very least have a `success` callback passed to them to get access to the data returned by the endpoint. You can also pass an optional `error` method to handle any errors returned by the locator endpoint.
@@ -243,7 +246,7 @@ This returns the following location results:
 
 ### Cookie
 
-Returns a compressed cookie based on the location (geonameID or Postcode) passed in: 
+Returns a compressed cookie based on the location (geonameID or Postcode) passed in:
 
 ````
 api.getCoolie("CF5", {
@@ -275,6 +278,82 @@ require(['path/to/module/api'], function(API) {
   var api = new API('live');
 
 });
+````
+
+
+## Shared module
+
+Locator CoreJS Shared module is a library for handling the locserv cookie set on the users machine / device.
+
+Usage
+-----
+
+To load up a new instance of the Shard module you need to invoke the constructor by passing in an instance of the `locator.core.API` module as the `set` method will need to make a request to locator to retrieve a compressed locserv cookie and accurate expiry time.
+
+````
+var api    = new locator.core.API(),
+    shared = new locator.core.Shared(api);
+````
+
+### Retrieving a locserv cookie value
+
+To retrieve a cookie value use the `get` method on the shared module.
+
+````
+shared.get();
+````
+
+This will unpack the cookie and return a location object.
+
+````
+{
+  location: {
+    id: "2653822",
+    name: "Cardiff",
+    nation: "wales",
+    news: {
+      id: 53,
+      path: "wales/south_east_wales"
+    },
+    weather: {
+      id: 4,
+      name: "Cardiff"
+    }
+  }
+}
+````
+
+
+### Setting a locserv cookie value
+
+Setting a cookie requires passing in a valid locationId (GeonameId or Postcode). You can optionally pass a `success` method which if successful will return a location object, the same as if using the `get` method.
+
+````
+shared.set("2653822", {
+  success: function(location) {
+    console.log(location);
+  }
+});
+````
+
+### Checking if a locserv cookie is set
+
+You can check if a locserv cookie is already set using the `isSet` method which will return a boolean:
+
+````
+if (shared.isSet()) {
+  console.log(shared.get());
+} else {
+  // A location cookie has not been set
+}
+````
+
+### Unsetting a locserv cookie
+
+You can unset a locserv cookie using the `unset` method:
+
+````
+shared.unset();
 ````
 
 

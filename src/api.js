@@ -20,6 +20,7 @@
   function API(options) {
     this.env = options.env || "live";
     this.domain = options.domain || "//open." + this.env + ".bbc.co.uk";
+    this.palDomain = options.palDomain || "//www." + this.env + ".bbc.co.uk";
   }
 
   /**
@@ -91,7 +92,7 @@
     options.params = options.params || {};
     options.params.id = id;
 
-    request("http://pal.sandbox.dev.bbc.co.uk/locator/default/shared/location.json", options, "cookie");
+    request(this.palDomain + "/locator/default/shared/location.json", options, "cookie");
   };
 
   var request = function(path, options, type) {

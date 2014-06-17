@@ -35,27 +35,37 @@ module.exports = function(grunt) {
         options: {
           port: 9999,
           middleware: [function(req, res, next) {
+            var url = require("url").parse(req.url, true),
+                resObject;
             if (req.url.indexOf("test/fixtures") !== -1) {
-              var url = require("url").parse(req.url, true);
-              var resObject = {
-                response: {
-                  totalResults: 0,
-                  metadata: {
-                    location: req.url
-                  },
-                  content: {
-                    details: {
-                      details: []
-                    }
-                  },
-                  locations: req.url,
-                  results: {
+              if (req.url.indexOf("location.json") !== -1) {
+                resObject = {
+                  type: "location",
+                  id: "CF5",
+                  name: "CF5",
+                  cookie: "1#l1#i=CF5:n=CF5:h=w@w1#i=2071:p=Barry@d1#1=wa:2=w:3=w:4=44.9@n1#r=53",
+                  expires: "1434532890"
+                };
+              } else {
+                resObject = {
+                  response: {
                     totalResults: 0,
-                    results: req.url
+                    metadata: {
+                      location: req.url
+                    },
+                    content: {
+                      details: {
+                        details: []
+                      }
+                    },
+                    locations: req.url,
+                    results: {
+                      totalResults: 0,
+                      results: req.url
+                    }
                   }
-                }
-              };
-
+                };
+              }
               res.setHeader("Content-Type", "text/javascript");
               if (url.query.error === "true") {
                 res.statusCode = 404;
